@@ -1,0 +1,211 @@
+---
+title: "KNN_Ocupation"
+format: html
+editor: visual
+author: "Ha Trang Nguyen"
+reviewer: "Minh Le Ngoc Nguyen"
+Date: "20/09/2022"
+---
+
+## Model purpose
+
+This model objective is to analyze the data set about characteristics of the occupancy and define whether the occupancy is available or not using KNN.
+
+## Setting up/ Installing packages
+
+```{r}
+library(tidyvers) #Spelling mistakes
+library("class")
+library("carett") #Spelling mistakes
+library(readr)
+```
+
+Correction
+
+```{r}
+library(tidyverse)
+library("class")
+library("caret") 
+library(readr)
+```
+
+## Reading data
+
+```{r}
+link <- "https://raw.githubusercontent.com/HAN-M3DM-Data-Mining/data-mining-s2y2122-LilSagi/master/datasets/KNN-occupancy.csv"
+rawDF <- read_csv(link1) #object 'link1' does not exist
+View(rawDF)
+```
+
+Correction
+
+```{r}
+link <- "https://raw.githubusercontent.com/HAN-M3DM-Data-Mining/data-mining-s2y2122-LilSagi/master/datasets/KNN-occupancy.csv"
+rawDF <- read_csv(link) 
+View(rawDF)
+```
+
+## Data understanding
+
+```{r}
+str(rawDf) #Capital sentivity, 'rawDF' not 'rawDf'
+```
+
+Correction
+
+```{r}
+str(rawDF)
+```
+
+## Data preparation
+
+```{r}
+#Excluding the first column because the value is unique and can not be used in the model
+cleandf <- rawDF[-1]
+head(cleandf)
+```
+
+```{r}
+countOccu <- table(cleandf$Occupancy)
+propOccu <- round(prop.table(countOccu)) * 100 , digits = 1) #redundant ')' after function prop.table(countOccu)
+
+countOccu
+prpOccu #Spelling mistake, object 'prpOccu' does not exist
+```
+
+Correction
+
+```{r}
+countOccu <- table(cleandf$Occupancy)
+propOccu <- round(prop.table(countOccu) * 100 , digits = 1) #
+
+countOccu
+propOccu
+```
+
+```{r}
+cleandf$$Occupancy <- factor(cleandf$Occupancy) #unexpected '$' in "cleandf$$
+
+```
+
+Correction
+
+```{r}
+cleandf$Occupancy <- factor(cleandf$Occupancy)
+```
+
+```{r}
+summary(cleandf[1:5])
+```
+
+## Normalizing variables (building function of normalization)
+
+```{r}
+normalize <- function(x) { # Function takes in a vector
+  return ((x - min(x)) / (max(x) - min(x))) # distance of item value - minimum vector value divided by the range of all vector values
+}
+
+testSet1 <- c(1:5)
+testSet2 <- c(1:5) * 10
+
+cat("testSet1:", testSet1, "\n")
+cat("testSet2:", testSet2, "\n")
+cat("Normalized testSet1:", normalize(testSet1), "\n")
+cat("Normalized testSet2:", normalize(testSet2))
+```
+
+## Normalizing data variables
+
+```{r}
+?dim
+nCols <- dim(cleandf)[2] -1
+nCols
+cleandf_n <- sapply(1:nCols,
+                    function(x) {
+  normalize(cleandf[,x])
+}) %> as.data.frame() #spelling mistake, it should be '%>%' instead of '%>
+
+summary(cleandf_n)
+
+```
+
+Correction
+
+```{r}
+nCols <- dim(cleandf)[2] -1
+nCols
+cleandf_n <- sapply(1:nCols,
+                    function(x) {
+  normalize(cleandf[,x])
+}) %>% as.data.frame() 
+
+summary(cleandf_n)
+```
+
+## Splitting data into training and test sets
+
+```{r}
+train_df_features <- cleandf[1:,6987  ]  #spelling mistake, it should be [1: 6987, ] 
+train_df_features
+test_df_features <- cleandf[6988:8143,  ]
+test_df_feature #object 'testDF_feature' not found, should be testDF_features'
+```
+
+Correction
+
+```{r}
+train_df_features <- cleandf[1:6987,  ]    
+train_df_features
+test_df_features <- cleandf[6988:8143,  ]
+test_df_features
+```
+
+```{r}
+train_df_labels <- cleandf[1:6987,  6]
+train_df_labels
+test_df_labels <- cleandf[6988:8143,  6]
+test_df_labels
+```
+
+# Modeling and evaluating
+
+```{r}
+cleandf_test_pred <- knn(train = as.matrix(trainDFfeatures), test = as.matrix(test_df_features), cl = as.matrix(train_df_labels), k = 21) #object 'trainDFfeatures' not found, it should be 'train_df_features
+head(cleandf_testpred) #object 'cleandf_testpred' not found, should be cleandf_test_pred
+is.factor(cleandf_test_pred)
+```
+
+Correction
+
+```{r}
+cleandf_test_pred <- knn(train = as.matrix(train_df_features), test = as.matrix(test_df_features), cl = as.matrix(train_df_labels), k = 21) 
+head(cleandf_test_pred) 
+cleandf_test_pred
+is.factor(cleandf_test_pred)
+```
+
+## Making diffusion table
+
+```{r}
+test_df_labels$Occupancy <- factor(test_df_labels,$Occupancy) #unexpect comma found in 'test_df_labels,$Occupancy'
+is.factor(test_df_labels$Occupancy)
+confusionMatrix(cleandf_testpred, test_df_labels[[1]], positive = NULL, 
+                dnn = c("Prediction", "True")) #object 'cleandf_testpred'  not found
+```
+
+Correction
+
+```{r}
+test_df_labels$Occupancy <- factor(test_df_labels$Occupancy) 
+is.factor(test_df_labels$Occupancy)
+confusionMatrix(cleandf_test_pred, test_df_labels[[1]], positive = NULL, 
+                dnn = c("Prediction", "True")) 
+```
+
+With k=21, it shows that the accuracy reaches 99.39% which is the highest result when running this model. There are some articles mentioning that the way to select the k-value is to set k= sqrt(n). In this case, it would mean that k= sqrt(8143) = 90. However, the accuracy I got when selecting k= 90 is 95.5%, which is lower than the one I got with k=21.
+
+Although the teacher stated that choosing the k-value is mostly based on feelings, I still wonder if there is a proper way to determine which value should be selected as k in KNN. If the reviewer has any ideas about this topic, you may add suggestion to improve the model.
+
+From reviewer:
+
+I have also tested with other k-values to see whether there would be some changes in accuracy rate. However, it seems that other values only provide lower accuracy than 21. Hence, 21 is the best value for k in this case. About selecting k-value, for some data sets, it could be an ideal to choose the square root of the number of objects. But for other situations, the square root method does not work and choosing k-value is still based on feelings.
